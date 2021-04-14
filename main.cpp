@@ -1,15 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "parser.tab.h"
-#include <stdlib.h>
+#include "node.h"
 #include <unistd.h>
 #include <stddef.h>
 #include <limits.h>
 #include <sys/types.h>
 
 extern int cmd_number;
-extern const char* varTbl[128][100];
-extern int varTbl_row, varTbl_col;
+extern char* varTbl[128][100];
+extern int row, col;
+extern struct LL *list;
+
+extern char** environ;
 
 int getCommand() {
 
@@ -24,14 +27,22 @@ int getCommand() {
 	}
 }
 
+
 void runcd()
 {
-	int ch = chdir(varTbl[varTbl_row - 1][varTbl_col - 1]);
+	int ch = chdir(varTbl[row - 1][col - 1]);
 	if(ch != 0)
 	{
 		printf("Directory not found\n");
 	}
 }
+
+
+void runalias()
+{
+	push_LL(list, varTbl[row-1][col-2], varTbl[row-1][col-1]);
+}
+
 
 void processCommand()
 {
@@ -45,12 +56,17 @@ void processCommand()
 		case 3:// cd with argument
 					runcd();
 					break;
+		case 4://alias
+					runalias();
+					break;
+
   }
 	cmd_number = -1;
 
 }
 
 int main(int argc, char* argv[], char **envp) {
+	list = create_LL();
 	char cwd[PATH_MAX];
 	while(1) {
 		getcwd(cwd, sizeof(cwd));

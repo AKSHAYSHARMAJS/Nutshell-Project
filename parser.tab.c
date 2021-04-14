@@ -72,7 +72,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "node.h"
 #include <string>
+#include <unistd.h>
+#include <stddef.h>
+#include <limits.h>
+#include <sys/types.h>
 
 int yylex();
 
@@ -83,12 +88,14 @@ void yyerror(const char *s){
 }
 
 int cmd_number = -1;
-const char* varTbl[128][100];
-int varTbl_row = 0;
-int varTbl_col = 0;
-const char* temp_string;
+char* varTbl[128][100];
+int row = 0;
+int col = 0;
+char* temp_string;
+LL *list;
 
-#line 92 "parser.tab.c"
+
+#line 99 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -122,16 +129,21 @@ enum yysymbol_kind_t
   YYSYMBOL_BYE = 3,                        /* BYE  */
   YYSYMBOL_ENDF = 4,                       /* ENDF  */
   YYSYMBOL_CD = 5,                         /* CD  */
-  YYSYMBOL_WORD = 6,                       /* WORD  */
-  YYSYMBOL_META = 7,                       /* META  */
-  YYSYMBOL_YYACCEPT = 8,                   /* $accept  */
-  YYSYMBOL_commandline = 9,                /* commandline  */
-  YYSYMBOL_command = 10,                   /* command  */
-  YYSYMBOL_params = 11,                    /* params  */
-  YYSYMBOL_bye = 12,                       /* bye  */
-  YYSYMBOL_cd = 13,                        /* cd  */
-  YYSYMBOL_word = 14,                      /* word  */
-  YYSYMBOL_meta = 15                       /* meta  */
+  YYSYMBOL_ALIAS = 6,                      /* ALIAS  */
+  YYSYMBOL_QUOTE = 7,                      /* QUOTE  */
+  YYSYMBOL_UNALIAS = 8,                    /* UNALIAS  */
+  YYSYMBOL_WORD = 9,                       /* WORD  */
+  YYSYMBOL_META = 10,                      /* META  */
+  YYSYMBOL_YYACCEPT = 11,                  /* $accept  */
+  YYSYMBOL_commandline = 12,               /* commandline  */
+  YYSYMBOL_command = 13,                   /* command  */
+  YYSYMBOL_params = 14,                    /* params  */
+  YYSYMBOL_bye = 15,                       /* bye  */
+  YYSYMBOL_cd = 16,                        /* cd  */
+  YYSYMBOL_alias = 17,                     /* alias  */
+  YYSYMBOL_unalias = 18,                   /* unalias  */
+  YYSYMBOL_word = 19,                      /* word  */
+  YYSYMBOL_meta = 20                       /* meta  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -453,19 +465,19 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  2
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   7
+#define YYLAST   28
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  8
+#define YYNTOKENS  11
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  8
+#define YYNNTS  10
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  15
+#define YYNRULES  25
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  15
+#define YYNSTATES  31
 
 /* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   262
+#define YYMAXUTOK   265
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -505,15 +517,16 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6,     7
+       5,     6,     7,     8,     9,    10
 };
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_int8 yyrline[] =
+static const yytype_uint8 yyrline[] =
 {
-       0,    32,    32,    33,    35,    36,    36,    36,    36,    39,
-      44,    45,    48,    51,    60,    63
+       0,    43,    43,    44,    46,    47,    47,    47,    47,    47,
+      47,    51,    54,    57,    64,    65,    69,    72,    79,    89,
+      99,   104,   109,   115,   122,   165
 };
 #endif
 
@@ -530,8 +543,8 @@ static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
 static const char *const yytname[] =
 {
   "\"end of file\"", "error", "\"invalid token\"", "BYE", "ENDF", "CD",
-  "WORD", "META", "$accept", "commandline", "command", "params", "bye",
-  "cd", "word", "meta", YY_NULLPTR
+  "ALIAS", "QUOTE", "UNALIAS", "WORD", "META", "$accept", "commandline",
+  "command", "params", "bye", "cd", "alias", "unalias", "word", "meta", YY_NULLPTR
 };
 
 static const char *
@@ -546,11 +559,12 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    (internal) symbol number NUM (which must be that of a token).  */
 static const yytype_int16 yytoknum[] =
 {
-       0,   256,   257,   258,   259,   260,   261,   262
+       0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
+     265
 };
 #endif
 
-#define YYPACT_NINF (-6)
+#define YYPACT_NINF (-9)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -564,8 +578,10 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      -6,     0,    -6,    -6,    -6,    -5,    -6,    -6,    -6,    -6,
-      -6,    -6,    -6,    -6,    -6
+      -9,     0,    -9,    -9,    -9,     8,    -8,    -2,    -9,    -9,
+      -9,    -9,    -9,    -9,    -9,    -9,    -9,    -9,    16,    -9,
+       3,    11,    -9,    15,    -9,    -9,    16,     3,    -9,    19,
+      -9
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -573,20 +589,22 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       2,     0,     1,    11,    10,    12,    14,    15,     3,     5,
-       6,     7,     8,     9,    13
+       2,     0,     1,    15,    14,    16,    22,     0,    24,    25,
+       3,     5,     6,     7,     8,     9,    10,    11,     0,    12,
+      17,     0,    23,     0,    13,    11,     0,    19,    18,     0,
+      21
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-      -6,    -6,    -6,    -6,    -6,    -6,    -6,    -6
+      -9,    -9,    -9,    -7,    -9,    -9,    -9,    -9,    -9,    -9
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     1,     8,    14,     9,    10,    11,    12
+       0,     1,    10,    20,    11,    12,    13,    14,    15,    16
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -594,34 +612,42 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-       2,    13,     0,     3,     4,     5,     6,     7
+       2,    21,     0,     3,     4,     5,     6,    22,     7,     8,
+       9,    23,    24,    17,    27,    18,    25,    19,    26,    29,
+      19,    17,    28,     0,    24,    19,    30,     0,    24
 };
 
 static const yytype_int8 yycheck[] =
 {
-       0,     6,    -1,     3,     4,     5,     6,     7
+       0,     9,    -1,     3,     4,     5,     6,     9,     8,     9,
+      10,    18,     9,     5,    21,     7,     5,     9,     7,    26,
+       9,     5,     7,    -1,     9,     9,     7,    -1,     9
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     9,     0,     3,     4,     5,     6,     7,    10,    12,
-      13,    14,    15,     6,    11
+       0,    12,     0,     3,     4,     5,     6,     8,     9,    10,
+      13,    15,    16,    17,    18,    19,    20,     5,     7,     9,
+      14,     9,     9,    14,     9,     5,     7,    14,     7,    14,
+       7
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_int8 yyr1[] =
 {
-       0,     8,     9,     9,    10,    10,    10,    10,    10,    11,
-      12,    12,    13,    13,    14,    15
+       0,    11,    12,    12,    13,    13,    13,    13,    13,    13,
+      13,    14,    14,    14,    15,    15,    16,    16,    16,    17,
+      17,    17,    17,    18,    19,    20
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_int8 yyr2[] =
 {
        0,     2,     0,     2,     0,     1,     1,     1,     1,     1,
-       1,     1,     1,     2,     1,     1
+       1,     1,     1,     2,     1,     1,     1,     2,     4,     3,
+       3,     5,     1,     2,     1,     1
 };
 
 
@@ -1088,60 +1114,181 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 9: /* params: WORD  */
-#line 39 "parser.y"
-                     {
+  case 11: /* params: CD  */
+#line 51 "parser.y"
+                   {
+			temp_string = "cd";
+		}
+#line 1123 "parser.tab.c"
+    break;
+
+  case 12: /* params: WORD  */
+#line 54 "parser.y"
+                       {
 			temp_string = (yyvsp[0].string);
 		}
-#line 1097 "parser.tab.c"
+#line 1131 "parser.tab.c"
     break;
 
-  case 10: /* bye: ENDF  */
-#line 44 "parser.y"
+  case 13: /* params: params WORD  */
+#line 57 "parser.y"
+                              {
+			strcat(temp_string, " ");
+			strcat(temp_string, (yyvsp[0].string));
+		}
+#line 1140 "parser.tab.c"
+    break;
+
+  case 14: /* bye: ENDF  */
+#line 64 "parser.y"
        { exit(0);}
-#line 1103 "parser.tab.c"
+#line 1146 "parser.tab.c"
     break;
 
-  case 11: /* bye: BYE  */
-#line 45 "parser.y"
+  case 15: /* bye: BYE  */
+#line 65 "parser.y"
         { cmd_number = 1;}
-#line 1109 "parser.tab.c"
+#line 1152 "parser.tab.c"
     break;
 
-  case 12: /* cd: CD  */
-#line 48 "parser.y"
+  case 16: /* cd: CD  */
+#line 69 "parser.y"
            {
 			cmd_number = 2;
 		}
-#line 1117 "parser.tab.c"
+#line 1160 "parser.tab.c"
     break;
 
-  case 13: /* cd: CD params  */
-#line 51 "parser.y"
+  case 17: /* cd: CD params  */
+#line 72 "parser.y"
                     {
 			cmd_number = 3;
-			varTbl_col = 0;
-			varTbl[varTbl_row][varTbl_col] = temp_string;
-			varTbl_col++;
-			varTbl_row++;
+			col = 0;
+			varTbl[row][col] = temp_string;
+			col++;
+			row++;
 	}
-#line 1129 "parser.tab.c"
+#line 1172 "parser.tab.c"
     break;
 
-  case 14: /* word: WORD  */
-#line 60 "parser.y"
-       {printf("Detected a word : %s \n", (yyvsp[0].string));}
-#line 1135 "parser.tab.c"
+  case 18: /* cd: CD QUOTE params QUOTE  */
+#line 79 "parser.y"
+                               {
+		cmd_number = 3;
+		col = 0;
+		varTbl[row][col] = temp_string;
+		col++;
+		row++;
+	}
+#line 1184 "parser.tab.c"
     break;
 
-  case 15: /* meta: META  */
-#line 63 "parser.y"
+  case 19: /* alias: ALIAS WORD params  */
+#line 89 "parser.y"
+                                   {
+			cmd_number = 4;
+			char *name = (yyvsp[-1].string);
+			char *value = temp_string;
+			varTbl[row][col] = name;
+			col += 1;
+			varTbl[row][col] = value;
+			col += 1;
+			row += 1;
+		}
+#line 1199 "parser.tab.c"
+    break;
+
+  case 20: /* alias: ALIAS WORD CD  */
+#line 99 "parser.y"
+                                {
+			char *name = (yyvsp[-1].string);
+			char *value = "cd";
+			push_LL(list, name, value);
+		}
+#line 1209 "parser.tab.c"
+    break;
+
+  case 21: /* alias: ALIAS WORD QUOTE params QUOTE  */
+#line 104 "parser.y"
+                                                {
+			char *name = (yyvsp[-3].string);
+			char *value = temp_string;
+			push_LL(list, name, value);
+		}
+#line 1219 "parser.tab.c"
+    break;
+
+  case 22: /* alias: ALIAS  */
+#line 109 "parser.y"
+                        {
+			print_LL(list);
+		}
+#line 1227 "parser.tab.c"
+    break;
+
+  case 23: /* unalias: UNALIAS WORD  */
+#line 115 "parser.y"
+                                    {
+			char *name = (yyvsp[0].string);
+			remove_node(list, name);
+}
+#line 1236 "parser.tab.c"
+    break;
+
+  case 24: /* word: WORD  */
+#line 122 "parser.y"
+             {
+		char *expand = command_expand(list, (yyvsp[0].string));
+		cmd_number = 20;
+		if(strcmp("Command not found", expand) == 0)
+		{
+			printf("%s : Command not found", (yyvsp[0].string));
+		}
+		else
+		{
+
+			p = fork();
+			if (p < 0)
+			{
+				printf("fork failed");
+			}
+			else if (p == 0)
+			{
+				FILE *f;
+				f = fopen("cmdvalue.txt", "w");
+				fprintf(f, "%s\n", expand);
+				fclose(f);
+				f = fopen("cmdvalue.txt", "r");
+				int filedesc = fileno(f);
+				dup2(filedesc, fileno(stdin));
+				fclose(f);
+				char dest[100];
+				strcpy(dest, getenv("PWD"));
+				strcat(dest, "/");
+				strcat(dest, "cmdvalue.txt");
+				execl(dest, "cmdvalue.txt", 0);
+			}
+			else
+			{
+				while ((wpid = wait(&mutex)) > 0)
+				{
+					//parent process waits until child exits
+				}
+			}
+		}
+		printf("\n");
+}
+#line 1282 "parser.tab.c"
+    break;
+
+  case 25: /* meta: META  */
+#line 165 "parser.y"
              {printf("Detected a meta character : %s \n", (yyvsp[0].string));}
-#line 1141 "parser.tab.c"
+#line 1288 "parser.tab.c"
     break;
 
 
-#line 1145 "parser.tab.c"
+#line 1292 "parser.tab.c"
 
       default: break;
     }
@@ -1335,5 +1482,5 @@ yyreturn:
   return yyresult;
 }
 
-#line 64 "parser.y"
+#line 166 "parser.y"
 
