@@ -24,6 +24,12 @@ void push_LL(LL *list, char *name, char *data) {
 
     while(curr_alias != NULL)
     {
+				if(strcmp(curr_alias->node_name, data) == 0 && strcmp(curr_alias->data, name) == 0)
+				{
+					printf("Error, expansion of \"%s\" would create a loop.\n", name);
+					return;
+				}
+				//TODO recursive loop for infinite loop detection
     		if(strcmp(curr_alias->node_name, name) == 0)
         {
     			addNode = 0;
@@ -170,30 +176,41 @@ void remove_node(LL *list, char *name) {
 	node *prev_node = NULL;
 	int index = 0;
 	int length = 0;
-	while (curr_node != NULL) {
+	while (curr_node != NULL)
+	{
 		length++;
 		curr_node = curr_node->next;
 	}
 	curr_node = list->start;
 
-	while (curr_node != NULL) {
-		char *nodeName = curr_node->node_name;
-		if ( strcmp(nodeName, name) == 0 ) {
+	while (curr_node != NULL)
+	{
+		if ( strcmp(curr_node->node_name, name) == 0 )
+		{
+			index++;
 			break;
-		} else {
+		}
+		 else
+		{
 			prev_node = curr_node;
 			curr_node = curr_node->next;
 			index++;
 		}
 	}
-	if(curr_node != NULL) {
-		if (index == 0) {
+	if(curr_node != NULL)
+	{
+		if (index == 0)
+		{
 			prev_node = curr_node->next;
 			list->start = prev_node;
-		} else if (index == length) {
+		}
+		else if (index == length)
+		{
 			list->end = prev_node;
 			prev_node->next = curr_node->next;
-		} else {
+		}
+		 else
+		 {
 			prev_node->next = curr_node->next;
 		}
 		curr_node->next = NULL;

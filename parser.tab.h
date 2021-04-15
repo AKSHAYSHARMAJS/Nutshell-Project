@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 29 "parser.y"
+#line 34 "parser.y"
 
 #include "node.h"
 
@@ -66,8 +66,19 @@ extern int yydebug;
     ALIAS = 261,                   /* ALIAS  */
     QUOTE = 262,                   /* QUOTE  */
     UNALIAS = 263,                 /* UNALIAS  */
-    WORD = 264,                    /* WORD  */
-    META = 265                     /* META  */
+    SETENV = 264,                  /* SETENV  */
+    PRINTENV = 265,                /* PRINTENV  */
+    UNSETENV = 266,                /* UNSETENV  */
+    LESS = 267,                    /* LESS  */
+    GREATER = 268,                 /* GREATER  */
+    STAR = 269,                    /* STAR  */
+    AND = 270,                     /* AND  */
+    QUESTION = 271,                /* QUESTION  */
+    DOLLAR = 272,                  /* DOLLAR  */
+    OCURL = 273,                   /* OCURL  */
+    CCURL = 274,                   /* CCURL  */
+    PIPING = 275,                  /* PIPING  */
+    WORD = 276                     /* WORD  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -76,12 +87,12 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 33 "parser.y"
+#line 38 "parser.y"
 
 	char* string;
 	int num;
 
-#line 85 "parser.tab.h"
+#line 96 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
