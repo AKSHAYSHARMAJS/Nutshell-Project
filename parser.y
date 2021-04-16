@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 
 int yylex();
 
@@ -51,7 +52,7 @@ char* alias_expand(char* name)
 	int num;
 }
 
-%token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL PIPING LS PRINT PWD TILDE TOUCH HEAD TAIL CAT
+%token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL PIPING LS PRINT PWD TILDE TOUCH HEAD TAIL CAT WC ESC
 %token <string> WORD ARG
 
 %%
@@ -60,7 +61,7 @@ cmdline:
   | cmdline cmd ;
 
 cmd:
-  | bye | cd | alias | unalias | setenv | printenv | unsetenv | piping | redirectIO | read_from_io | ls | echo | pwd | envexpand | touch | head | tail | cat | word ;
+  | bye | cd | alias | unalias | setenv | printenv | unsetenv | piping | redirectIO | read_from_io | ls | echo | pwd | envexpand | touch | head | tail | wc | cat | word ;
 
 
 envexpand:
@@ -319,7 +320,8 @@ cd:
 		varTbl[row][col] = temp_string2;
 		col++;
 		row++;
-	}
+	};
+
 
 
 alias:
@@ -664,7 +666,7 @@ cat:
 		fd = open($2,O_RDONLY);            /*open the file in READONLY mode*/
 
 		if(fd < 0) {
-			printf("error opening file\n");
+			printf("error opening file or file doesn't exist\n");
 
 		}
 		else
@@ -679,7 +681,7 @@ cat:
 		fd = open($3 ,O_RDONLY);            /*open the file in READONLY mode*/
 
 		if(fd < 0) {
-			printf("error opening file\n");
+			printf("error opening file or file doesn't exist\n");
 
 		}
 		else
@@ -689,11 +691,67 @@ cat:
 		}
 	};
 
+
+wc:
+	WC WORD {
+			std::string line;
+	    std::fstream file;
+			file.open($2);
+			if(file != NULL)
+			{
+				int numlines=0, numwords = 0;
+				while(getline(file, line))
+				{
+				    ++numlines;
+				    std::stringstream lineStream(line);
+				    while(getline(lineStream, line, ' '))
+				    {
+				        ++numwords;
+				    }
+				}
+
+				printf("%d %d %d %s\n",numlines, numwords, (int)file.tellg(), $2);
+			}
+			else
+			{
+				printf("error opening file or file doesn't exist\n");
+			}
+			file.close();
+
+	};
+
 word:
 	WORD {
+
 		char *expand = command_expand(list, $1);
 		cmd_number = 20;
-		if(strcmp("Command not found", expand) == 0)
+		struct stat sb;
+  	if(stat($1, &sb) == 0 && sb.st_mode & S_IXUSR)
+		{
+			pid_t p;
+			int mutex, wpid;
+			p = fork();
+			if (p < 0)
+			{
+				printf("fork failed");
+			}
+			else if (p == 0)
+			{
+				char *symlinkpath = $1;
+				char actualpath [PATH_MAX+1];
+				char *ptr;
+				ptr = realpath(symlinkpath, actualpath);
+				execl(ptr, "cmdvalue.txt", 0);
+			}
+			else
+			{
+				while ((wpid = wait(&mutex)) > 0)
+				{
+					//parent process waits until child exits
+				}
+			}
+		}
+		else if(strcmp("Command not found", expand) == 0)
 		{
 			printf("%s : command not found", $1);
 		}

@@ -22,6 +22,7 @@ touch {return TOUCH;}
 head { return HEAD;}
 tail { return TAIL;}
 cat {return CAT;}
+wc {return WC;}
 [\~] {return TILDE;}
 [\"] {return QUOTE;}
 [\<] {return LESS;}
@@ -44,6 +45,7 @@ cat {return CAT;}
                     };
 [\n] {return -1;}
 <<EOF>> {return ENDF;}
+[^[] {return ESC;}
 [ \t\r]+                          { ; } /* Ignore Whitespace */
 .                                 { ; } /* No Match */
 

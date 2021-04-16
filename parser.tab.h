@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 45 "parser.y"
+#line 46 "parser.y"
 
 #include "node.h"
 
@@ -86,8 +86,10 @@ extern int yydebug;
     HEAD = 281,                    /* HEAD  */
     TAIL = 282,                    /* TAIL  */
     CAT = 283,                     /* CAT  */
-    WORD = 284,                    /* WORD  */
-    ARG = 285                      /* ARG  */
+    WC = 284,                      /* WC  */
+    ESC = 285,                     /* ESC  */
+    WORD = 286,                    /* WORD  */
+    ARG = 287                      /* ARG  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -96,12 +98,12 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 49 "parser.y"
+#line 50 "parser.y"
 
 	char* string;
 	int num;
 
-#line 105 "parser.tab.h"
+#line 107 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
