@@ -14,6 +14,10 @@ unalias {return UNALIAS;}
 setenv {return SETENV;}
 printenv {return PRINTENV;}
 unsetenv {return UNSETENV;}
+ls {return LS;}
+echo {return PRINT;}
+pwd {return PWD;}
+[\~] {return TILDE;}
 [\"] {return QUOTE;}
 [\<] {return LESS;}
 [\>] {return GREATER;}
@@ -24,7 +28,7 @@ unsetenv {return UNSETENV;}
 [\{] {return OCURL;}
 [\}] {return CCURL;}
 [\|] {return PIPING;}
-[0-9a-zA-Z/\.]+ {yylval.string = strdup(yytext); return WORD; };
+[0-9a-zA-Z/\-\:\.]+ {yylval.string = strdup(yytext); return WORD; };
 [\n] {return -1;}
 <<EOF>> {return ENDF;}
 [ \t\r]+                          { ; } /* Ignore Whitespace */

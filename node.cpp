@@ -7,6 +7,17 @@ LL * create_LL() {
 	return list;
 }
 
+bool detectloop(LL *list, node *curr, char* name, char* data)
+{
+		if(curr == NULL)
+			return 0;
+		if((strcmp(name, data) == 0) || (strcmp(curr->node_name, data) == 0 && strcmp(curr->data, name)== 0))
+			return 1;
+		if(strcmp(curr->node_name, data) == 0)
+			return detectloop(list, list->start, name, curr->data);
+		return detectloop(list, curr->next, name, data);
+}
+
 void push_LL(LL *list, char *name, char *data) {
 	if(strcmp(name, data) == 0){
 		printf("Error, expansion of \"%s\" would create a loop.\n", name);
@@ -24,12 +35,11 @@ void push_LL(LL *list, char *name, char *data) {
 
     while(curr_alias != NULL)
     {
-				if(strcmp(curr_alias->node_name, data) == 0 && strcmp(curr_alias->data, name) == 0)
+				if(detectloop(list, list->start, name, data))
 				{
 					printf("Error, expansion of \"%s\" would create a loop.\n", name);
 					return;
 				}
-				//TODO recursive loop for infinite loop detection
     		if(strcmp(curr_alias->node_name, name) == 0)
         {
     			addNode = 0;

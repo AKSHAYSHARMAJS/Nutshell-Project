@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 34 "parser.y"
+#line 38 "parser.y"
 
 #include "node.h"
 
@@ -78,7 +78,11 @@ extern int yydebug;
     OCURL = 273,                   /* OCURL  */
     CCURL = 274,                   /* CCURL  */
     PIPING = 275,                  /* PIPING  */
-    WORD = 276                     /* WORD  */
+    LS = 276,                      /* LS  */
+    PRINT = 277,                   /* PRINT  */
+    PWD = 278,                     /* PWD  */
+    TILDE = 279,                   /* TILDE  */
+    WORD = 280                     /* WORD  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -87,12 +91,12 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 38 "parser.y"
+#line 42 "parser.y"
 
 	char* string;
 	int num;
 
-#line 96 "parser.tab.h"
+#line 100 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

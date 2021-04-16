@@ -8,16 +8,20 @@
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 #include <fcntl.h>
 #include <dirent.h>
 
 void processCommand();
 extern int cmd_number;
 extern char* varTbl[128][100];
-extern int row, col;
+extern int row, col, wild;
 extern struct LL *list;
-
+extern char* wildcard[100];
+int filedesc;
 extern char** environ;
+int saved_stdout;
+
 
 int getCommand() {
 
@@ -34,13 +38,9 @@ int getCommand() {
 
 
 void redirectIO_greater(char* f) {
-	int filedesc = open(f, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
-	if (filedesc != -1) {
-		dup2(filedesc, 2);
-	}
-	else {
-		printf("%s",f);
-	}
+	filedesc = open(f, O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+	saved_stdout = dup(1);
+	dup2(filedesc, 1);
 	close(filedesc);
 }
 
@@ -56,10 +56,12 @@ void runcd()
 			{
 				printf("Directory not found\n");
 			}
+			dup2(saved_stdout, 1);
 		}
 		else if (strcmp(varTbl[row-1][col-2], "less") == 0)
 		{
-			perror("Cannot read from file with command cd");
+			perror("Cannot read from file with command cd\n");
+			return;
 		}
 	}
 	else
@@ -109,10 +111,11 @@ void runsetenv ()
 	{
 		redirectIO_greater(varTbl[row-1][col-1]);
 		setenv(varTbl[row-1][col-4], varTbl[row-1][col-3], 1);
+		dup2(saved_stdout, 1);
 	}
-	else if (strcmp(varTbl[row-1][col-2], "less"))
+	else if (strcmp(varTbl[row-1][col-2], "less") == 0)
 	{
-		printf("Cannot read from file with command setenv");
+		printf("Cannot read from file with command setenv\n");
 	}
 	else {
 		setenv(varTbl[row-1][col-2], varTbl[row-1][col-1], 1);
@@ -133,17 +136,30 @@ void rununsetenv ()
 		else if (strcmp(varTbl[row-1][col-2], "greater") == 0)
 		{
 			redirectIO_greater(varTbl[row-1][col-1]);
+			if(strcmp(varTbl[row-1][col-3],"PATH") == 0 || strcmp(varTbl[row-1][col-3],"HOME") == 0)
+				{
+					printf("Cannot unset environment variable: %s\n", varTbl[row-1][col-3]);
+					return;
+				}
 			unsetenv(varTbl[row-1][col-3]);
+			dup2(saved_stdout, 1);
 		}
 		else if (strcmp(varTbl[row-1][col-2], "less") == 0)
 		{
-			printf("Cannot read from file with command unsetenv");
+			printf("Cannot read from file with command unsetenv\n");
+			return;
 		}
 	}
 	else
 	{
-		unsetenv(varTbl[row-1][col-1]);
+		if(strcmp(varTbl[row-1][col-1],"PATH") == 0 || strcmp(varTbl[row-1][col-1],"HOME") == 0)
+			{
+				printf("Cannot unset environment variable: %s\n", varTbl[row-1][col-1]);
+				return;
+			}
+			unsetenv(varTbl[row-1][col-1]);
 	}
+
 }
 
 
@@ -186,14 +202,61 @@ void runprintenv()
 		else if (strcmp(varTbl[row-1][col-2], "less") == 0)
 		{
 			printf("Cannot read from file with command printenv");
+			return;
 		}
 	}
-	else
-	{
+
 		int k = 0;
 		while (environ[k]) {
 			printf("%s\n", environ[k++]);
 		}
+		dup2(saved_stdout, 1);
+}
+
+
+void runls()
+{
+	DIR *d;
+		struct dirent *dir;
+		d = opendir(".");
+		if(d)
+		{
+			while ((dir = readdir(d)) != NULL)
+			{
+				printf("%s\n", dir->d_name);
+			}
+			closedir(d);
+		}
+}
+
+void runls_dir()
+{
+		if (col >= 2)
+		{
+			if (strcmp(varTbl[row-1][col-2], "greater") == 0)
+			{
+				redirectIO_greater(varTbl[row-1][col-1]);
+				wild--;
+				while(wild >= 0)
+				{
+					printf("%s\n", wildcard[wild]);
+					wild--;
+				}
+				dup2(saved_stdout, 1);
+			}
+			else if (strcmp(varTbl[row-1][col-2], "less") == 0)
+			{
+				printf("Can't read from file in ls");
+			}
+	}
+	else
+	{
+			wild--;
+			while(wild >= 0)
+			{
+				printf("%s\n", wildcard[wild]);
+				wild--;
+			}
 	}
 }
 
@@ -202,6 +265,7 @@ void processCommand()
 {
   switch (cmd_number) {
   	case 1: //bye
+					printf("BYE!!\n");
 					exit(0);
 					break;
 		case 2:// only cd
@@ -224,6 +288,12 @@ void processCommand()
 					break;
 		case 8:
 					redirectIO_less();
+					break;
+		case 9:
+					runls();
+					break;
+		case 10:
+					runls_dir();
 					break;
   }
 	cmd_number = -1;
