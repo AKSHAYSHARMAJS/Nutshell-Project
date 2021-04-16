@@ -11,6 +11,8 @@
 #include <sys/file.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <fstream>
+#include <iostream>
 
 void processCommand();
 extern int cmd_number;
@@ -306,6 +308,12 @@ void runls_flag()
 }
 
 
+void runTouch()
+{
+	std::ofstream MyFile(varTbl[row-1][col-1]);
+}
+
+
 void processCommand()
 {
   switch (cmd_number) {
@@ -342,6 +350,9 @@ void processCommand()
 					break;
 		case 11:
 					runls_flag();
+					break;
+		case 12:
+					runTouch();
 					break;
   }
 	cmd_number = -1;

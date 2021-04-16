@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <vector>
 #include "node.h"
 #include <string>
 #include <unistd.h>
@@ -13,6 +12,8 @@
 #include <fcntl.h>
 #include <dirent.h>
 #include <pwd.h>
+#include <fstream>
+#include <iostream>
 
 int yylex();
 
@@ -44,7 +45,7 @@ LL *list;
 	int num;
 }
 
-%token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL PIPING LS PRINT PWD TILDE
+%token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL PIPING LS PRINT PWD TILDE TOUCH
 %token <string> WORD ARG
 
 %%
@@ -53,7 +54,7 @@ cmdline:
   | cmdline cmd ;
 
 cmd:
-  | bye | cd | alias | unalias | setenv | printenv | unsetenv | piping | redirectIO | read_from_io | ls | echo | pwd | envexpand | word ;
+  | bye | cd | alias | unalias | setenv | printenv | unsetenv | piping | redirectIO | read_from_io | ls | echo | pwd | envexpand | touch | word ;
 
 
 envexpand:
@@ -491,6 +492,22 @@ ls:
 				varTbl[row][col] = $2;
 				col++;
 				row++;
+			};
+
+
+touch:
+			TOUCH WORD{
+				cmd_number = 12;
+				varTbl[row][col] = $2;
+				row++;
+				col++;
+			}
+			| TOUCH QUOTE WORD QUOTE
+			{
+				cmd_number = 12;
+				varTbl[row][col] = $3;
+				row++;
+				col++;
 			};
 
 

@@ -17,6 +17,7 @@ unsetenv {return UNSETENV;}
 ls {return LS;}
 echo {return PRINT;}
 pwd {return PWD;}
+touch {return TOUCH;}
 [\~] {return TILDE;}
 [\"] {return QUOTE;}
 [\<] {return LESS;}
