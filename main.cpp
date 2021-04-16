@@ -14,6 +14,8 @@
 #include <fstream>
 #include <iostream>
 
+
+
 void processCommand();
 extern int cmd_number;
 extern char* varTbl[128][100];
@@ -221,14 +223,37 @@ void runls()
 	DIR *d;
 		struct dirent *dir;
 		d = opendir(".");
-		if(d)
+		if(col >= 2)
 		{
-			while ((dir = readdir(d)) != NULL)
+			if (strcmp(varTbl[row-1][col-2], "greater") == 0)
 			{
-				printf("%s\n", dir->d_name);
+				redirectIO_greater(varTbl[row-1][col-1]);
+				if(d)
+				{
+					while ((dir = readdir(d)) != NULL)
+					{
+						printf("%s\n", dir->d_name);
+					}
+					closedir(d);
+				}
+				dup2(saved_stdout, 1);
 			}
-			closedir(d);
+			else if (strcmp(varTbl[row-1][col-2], "less") == 0)
+			{
+				printf("Can't read from file in ls");
+			}
 		}
+		else{
+			if(d)
+			{
+				while ((dir = readdir(d)) != NULL)
+				{
+					printf("%s\n", dir->d_name);
+				}
+				closedir(d);
+			}
+		}
+
 }
 
 void runls_dir()
@@ -280,7 +305,6 @@ void runls_flag()
 									printf("file not exits");
 									return;
 							}
-
 							printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
 							printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
 							printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
@@ -311,6 +335,103 @@ void runls_flag()
 void runTouch()
 {
 	std::ofstream MyFile(varTbl[row-1][col-1]);
+}
+
+
+void run_head()
+{
+	std::string word;
+    std::fstream file;
+    int count = 1;
+
+    file.open(varTbl[row - 1][col - 1]);
+    int numOfLines=0;
+
+    while(getline(file, word) && numOfLines < 10){
+        std::cout << word << std::endl;
+        numOfLines++;
+    }
+}
+
+void run_head_arg()
+{
+
+	std::string word;
+    std::fstream file;
+		std::string num = "";
+		char arg[1000];
+		strcpy(arg, varTbl[row-1][col-2]);
+		for(int i = 1; arg[i] != '\0'; i++)
+		{
+			num += arg[i];
+		}
+    int n = stoi(num);				// Add n as first n number of lines
+    file.open(varTbl[row - 1][col - 1]);
+    int numOfLines=0;
+
+    while(getline(file, word) && numOfLines < n){
+        std::cout << word << std::endl;
+        numOfLines++;
+    }
+}
+
+void run_tail()
+{
+
+   std::ifstream myfile(varTbl[row - 1][col - 1]);
+   std::string line, buffer[5];
+   const size_t size = sizeof buffer / sizeof *buffer;
+   size_t i = 0;
+   while ( getline(myfile, line) )
+   {
+      buffer[i] = line;
+      if ( ++i >= size )
+      {
+         i = 0;
+      }
+   }
+
+   for ( size_t j = 0; j < size; ++j )
+   {
+      std::cout << buffer[i] << "\n";
+      if ( ++i >= size )
+      {
+         i = 0;
+      }
+   }
+}
+
+void run_tail_arg()
+{
+	std::string num = "";
+	char arg[1000];
+	strcpy(arg, varTbl[row-1][col-2]);
+	for(int i = 1; arg[i] != '\0'; i++)
+	{
+		num += arg[i];
+	}
+	int n = stoi(num);					//Add n as last n number of lines
+   std::ifstream myfile(varTbl[row - 1][col - 1]);
+   std::string line, buffer[n];
+   const size_t size = sizeof buffer / sizeof *buffer;
+   size_t i = 0;
+   while ( getline(myfile, line) )
+   {
+      buffer[i] = line;
+      if ( ++i >= size )
+      {
+         i = 0;
+      }
+   }
+
+   for ( size_t j = 0; j < size; ++j )
+   {
+      std::cout << buffer[i] << "\n";
+      if ( ++i >= size )
+      {
+         i = 0;
+      }
+   }
 }
 
 
@@ -354,6 +475,18 @@ void processCommand()
 		case 12:
 					runTouch();
 					break;
+		case 13:
+					run_head();
+					break;
+		case 14:
+					run_head_arg();
+					break;
+		case 15:
+					run_tail();
+					break;
+		case 16:
+					run_tail_arg();
+					break;
   }
 	cmd_number = -1;
 
@@ -362,6 +495,7 @@ void processCommand()
 
 int main(int argc, char* argv[], char **envp)
 {
+
 	list = create_LL();
 	char cwd[PATH_MAX];
 	while(1) {

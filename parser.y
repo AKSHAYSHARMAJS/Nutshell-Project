@@ -14,6 +14,7 @@
 #include <pwd.h>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 
 int yylex();
 
@@ -34,6 +35,11 @@ char* temp_string2 = "temp";
 char* io = "";
 LL *list;
 
+char* alias_expand(char* name)
+{
+	return command_expand(list, name);
+}
+
 %}
 
 %code requires {
@@ -45,7 +51,7 @@ LL *list;
 	int num;
 }
 
-%token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL PIPING LS PRINT PWD TILDE TOUCH
+%token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL PIPING LS PRINT PWD TILDE TOUCH HEAD TAIL
 %token <string> WORD ARG
 
 %%
@@ -54,14 +60,13 @@ cmdline:
   | cmdline cmd ;
 
 cmd:
-  | bye | cd | alias | unalias | setenv | printenv | unsetenv | piping | redirectIO | read_from_io | ls | echo | pwd | envexpand | touch | word ;
+  | bye | cd | alias | unalias | setenv | printenv | unsetenv | piping | redirectIO | read_from_io | ls | echo | pwd | envexpand | touch | head | tail | word ;
 
 
 envexpand:
 		DOLLAR OCURL WORD CCURL {
 			 	printf("%s\n",getenv($3));
 			}
-			|
 
 
 params:
@@ -82,6 +87,14 @@ params:
 		}
 		| LS {
 			temp_string = "ls";
+		}
+		| LS ARG{
+			temp_string = "ls";
+			char buffer[100];
+			strcpy(buffer, temp_string);
+			strcat(buffer, " ");
+			strcat(buffer, $2);
+			temp_string = buffer;
 		}
 		| PRINT {
 			temp_string = "echo";
@@ -339,7 +352,12 @@ unalias:
 			UNALIAS WORD{
 			char *name = $2;
 			remove_node(list, name);
-};
+		}
+			| UNALIAS DOLLAR OCURL WORD CCURL {
+				char *name = getenv($4);
+				remove_node(list, name);
+			};
+
 
 
 setenv:
@@ -405,6 +423,7 @@ unsetenv:
 				col++;
 				row++;
 			}
+
 			| UNSETENV WORD AND {
 				cmd_number = 6;
 				col = 0;
@@ -432,7 +451,7 @@ printenv:
 				PRINTENV {
 					cmd_number = 7;
 				}
-				| PRINTENV PIPING {
+				| PRINTENV {
 					cmd_number = 7;
 				}
 				| PRINTENV redirectIO {
@@ -473,6 +492,17 @@ ls:
 				col++;
 				row++;
 			}
+			| LS redirectIO {
+				col = 0;
+				cmd_number = 9;
+				varTbl[row][col] = temp_string;
+				col++;
+				varTbl[row][col] = io;
+				col++;
+				varTbl[row][col] = temp_string2;
+				col++;
+				row++;
+			}
 			| LS params redirectIO {
 				col = 0;
 				cmd_number = 10;
@@ -496,19 +526,52 @@ ls:
 
 
 touch:
-			TOUCH WORD{
-				cmd_number = 12;
+		TOUCH WORD{
+			cmd_number = 12;
+			varTbl[row][col] = $2;
+			row++;
+			col++;
+		}
+		| TOUCH QUOTE WORD QUOTE
+		{
+			cmd_number = 12;
+			varTbl[row][col] = $3;
+			row++;
+			col++;
+		};
+
+head:
+			HEAD WORD{
 				varTbl[row][col] = $2;
 				row++;
 				col++;
-			}
-			| TOUCH QUOTE WORD QUOTE
-			{
-				cmd_number = 12;
-				varTbl[row][col] = $3;
+				cmd_number = 13;
+		}
+		| HEAD ARG WORD{
+			varTbl[row][col] = $2;
+			col++;
+			varTbl[row][col] = $3;
+			row++;
+			col++;
+			cmd_number = 14;
+		}
+
+tail:
+			TAIL WORD{
+				varTbl[row][col] = $2;
 				row++;
 				col++;
-			};
+				cmd_number = 15;
+		}
+		| TAIL ARG WORD{
+			varTbl[row][col] = $2;
+			col++;
+			varTbl[row][col] = $3;
+			row++;
+			col++;
+			cmd_number = 16;
+		}
+
 
 
 piping:
@@ -582,14 +645,16 @@ echo:
 		| PRINT QUOTE WORD QUOTE{
 			printf("%s", $3);
 		}
-		| PRINT QUOTE params QUOTE {
-			printf("%s", temp_string);
+		| PRINT QUOTE envexpand QUOTE {
+
 		}
 
 
 pwd:
 	PWD{
-		printf("%s\n",getenv("PWD"));
+		char cwd[PATH_MAX];
+		getcwd(cwd, sizeof(cwd));
+		printf("%s\n",cwd);
 	}
 
 

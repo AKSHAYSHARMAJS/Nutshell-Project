@@ -1,6 +1,7 @@
 %{
 
 #include "parser.tab.h"
+#include "node.h"
 %}
 
 %option noyywrap
@@ -18,6 +19,8 @@ ls {return LS;}
 echo {return PRINT;}
 pwd {return PWD;}
 touch {return TOUCH;}
+head { return HEAD;}
+tail { return TAIL;}
 [\~] {return TILDE;}
 [\"] {return QUOTE;}
 [\<] {return LESS;}
@@ -31,10 +34,12 @@ touch {return TOUCH;}
 [\|] {return PIPING;}
 [0-9a-zA-Z/\-\:\.]+ {
                         yylval.string = strdup(yytext);
-                        if(yytext[0] == '-')
-                            return ARG;
-                        else
-                        return WORD;
+
+                          if(yytext[0] == '-')
+                              return ARG;
+                          else
+                            return WORD;
+
                     };
 [\n] {return -1;}
 <<EOF>> {return ENDF;}

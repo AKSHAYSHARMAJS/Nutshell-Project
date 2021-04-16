@@ -1,3 +1,4 @@
+
 #ifndef LL_H
 #define LL_H
 
@@ -16,6 +17,8 @@ typedef struct LL{
 	struct node *start;
 	struct node *end;
 } LL;
+
+char* alias_expand(char* name);
 
 LL *create_LL();
 

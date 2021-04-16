@@ -209,7 +209,7 @@ void remove_node(LL *list, char *name) {
 	}
 	if(curr_node != NULL)
 	{
-		if (index == 0)
+		if (index == 1)
 		{
 			prev_node = curr_node->next;
 			list->start = prev_node;
