@@ -261,6 +261,51 @@ void runls_dir()
 }
 
 
+void runls_flag()
+{
+		if(strcmp(varTbl[row-1][col-1],"-l") == 0 || strcmp(varTbl[row-1][col-1],"-lah") == 0 || strcmp(varTbl[row-1][col-1],"-al") == 0)
+			{
+				DIR *d;
+				struct dirent *dir;
+				d = opendir(".");
+				if(d)
+				{
+					while ((dir = readdir(d)) != NULL)
+					{
+							struct stat fileStat;
+							if(stat(dir->d_name, &fileStat) < 0)
+							{
+									printf("file not exits");
+									return;
+							}
+
+							printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+							printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+							printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+							printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+							printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+							printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+							printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+							printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
+							printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+							printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+							printf("\t");
+							printf("%d %d %d\t", fileStat.st_size, fileStat.st_nlink,fileStat.st_ino);
+							printf("%s\n", dir->d_name);
+					}
+					closedir(d);
+				}
+			}
+
+		else
+		{
+				printf("Not a valid flag for ls\n");
+				return;
+			}
+
+}
+
+
 void processCommand()
 {
   switch (cmd_number) {
@@ -294,6 +339,9 @@ void processCommand()
 					break;
 		case 10:
 					runls_dir();
+					break;
+		case 11:
+					runls_flag();
 					break;
   }
 	cmd_number = -1;

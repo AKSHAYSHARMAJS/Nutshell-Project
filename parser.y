@@ -45,7 +45,7 @@ LL *list;
 }
 
 %token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL PIPING LS PRINT PWD TILDE
-%token <string> WORD
+%token <string> WORD ARG
 
 %%
 
@@ -480,6 +480,15 @@ ls:
 				varTbl[row][col] = io;
 				col++;
 				varTbl[row][col] = temp_string2;
+				col++;
+				row++;
+			}
+			| LS ARG{
+				col = 0;
+				cmd_number = 11;
+				varTbl[row][col] = temp_string;
+				col++;
+				varTbl[row][col] = $2;
 				col++;
 				row++;
 			};

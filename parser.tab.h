@@ -82,7 +82,8 @@ extern int yydebug;
     PRINT = 277,                   /* PRINT  */
     PWD = 278,                     /* PWD  */
     TILDE = 279,                   /* TILDE  */
-    WORD = 280                     /* WORD  */
+    WORD = 280,                    /* WORD  */
+    ARG = 281                      /* ARG  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -96,7 +97,7 @@ union YYSTYPE
 	char* string;
 	int num;
 
-#line 100 "parser.tab.h"
+#line 101 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

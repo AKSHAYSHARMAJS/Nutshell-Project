@@ -872,34 +872,40 @@ YY_RULE_SETUP
 case 22:
 YY_RULE_SETUP
 #line 31 "lexxer.l"
-{yylval.string = strdup(yytext); return WORD; };
+{
+                        yylval.string = strdup(yytext);
+                        if(yytext[0] == '-')
+                            return ARG;
+                        else
+                        return WORD;
+                    };
 	YY_BREAK
 case 23:
 /* rule 23 can match eol */
 YY_RULE_SETUP
-#line 32 "lexxer.l"
+#line 38 "lexxer.l"
 {return -1;}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 33 "lexxer.l"
+#line 39 "lexxer.l"
 {return ENDF;}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 34 "lexxer.l"
+#line 40 "lexxer.l"
 { ; } /* Ignore Whitespace */
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 35 "lexxer.l"
+#line 41 "lexxer.l"
 { ; } /* No Match */
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 37 "lexxer.l"
+#line 43 "lexxer.l"
 ECHO;
 	YY_BREAK
-#line 902 "lex.yy.c"
+#line 908 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1902,6 +1908,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 37 "lexxer.l"
+#line 43 "lexxer.l"
 
 

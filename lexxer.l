@@ -28,7 +28,13 @@ pwd {return PWD;}
 [\{] {return OCURL;}
 [\}] {return CCURL;}
 [\|] {return PIPING;}
-[0-9a-zA-Z/\-\:\.]+ {yylval.string = strdup(yytext); return WORD; };
+[0-9a-zA-Z/\-\:\.]+ {
+                        yylval.string = strdup(yytext);
+                        if(yytext[0] == '-')
+                            return ARG;
+                        else
+                        return WORD;
+                    };
 [\n] {return -1;}
 <<EOF>> {return ENDF;}
 [ \t\r]+                          { ; } /* Ignore Whitespace */
