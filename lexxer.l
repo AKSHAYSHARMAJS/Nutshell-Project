@@ -21,6 +21,7 @@ pwd {return PWD;}
 touch {return TOUCH;}
 head { return HEAD;}
 tail { return TAIL;}
+cat {return CAT;}
 [\~] {return TILDE;}
 [\"] {return QUOTE;}
 [\<] {return LESS;}

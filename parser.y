@@ -51,7 +51,7 @@ char* alias_expand(char* name)
 	int num;
 }
 
-%token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL PIPING LS PRINT PWD TILDE TOUCH HEAD TAIL
+%token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL PIPING LS PRINT PWD TILDE TOUCH HEAD TAIL CAT
 %token <string> WORD ARG
 
 %%
@@ -60,7 +60,7 @@ cmdline:
   | cmdline cmd ;
 
 cmd:
-  | bye | cd | alias | unalias | setenv | printenv | unsetenv | piping | redirectIO | read_from_io | ls | echo | pwd | envexpand | touch | head | tail | word ;
+  | bye | cd | alias | unalias | setenv | printenv | unsetenv | piping | redirectIO | read_from_io | ls | echo | pwd | envexpand | touch | head | tail | cat | word ;
 
 
 envexpand:
@@ -657,6 +657,37 @@ pwd:
 		printf("%s\n",cwd);
 	}
 
+
+cat:
+	CAT WORD {
+		int fd, ch;
+		fd = open($2,O_RDONLY);            /*open the file in READONLY mode*/
+
+		if(fd < 0) {
+			printf("error opening file\n");
+
+		}
+		else
+		{
+			while(read(fd,&ch,1))                   /*Read one byte at a time*/
+				write(STDOUT_FILENO,&ch,1);
+		}
+
+	}
+	| CAT QUOTE WORD QUOTE {
+		int fd, ch;
+		fd = open($3 ,O_RDONLY);            /*open the file in READONLY mode*/
+
+		if(fd < 0) {
+			printf("error opening file\n");
+
+		}
+		else
+		{
+			while(read(fd,&ch,1))                   /*Read one byte at a time*/
+				write(STDOUT_FILENO,&ch,1);
+		}
+	};
 
 word:
 	WORD {

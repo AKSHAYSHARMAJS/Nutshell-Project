@@ -85,8 +85,9 @@ extern int yydebug;
     TOUCH = 280,                   /* TOUCH  */
     HEAD = 281,                    /* HEAD  */
     TAIL = 282,                    /* TAIL  */
-    WORD = 283,                    /* WORD  */
-    ARG = 284                      /* ARG  */
+    CAT = 283,                     /* CAT  */
+    WORD = 284,                    /* WORD  */
+    ARG = 285                      /* ARG  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -100,7 +101,7 @@ union YYSTYPE
 	char* string;
 	int num;
 
-#line 104 "parser.tab.h"
+#line 105 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
