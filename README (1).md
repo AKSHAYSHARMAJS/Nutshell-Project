@@ -80,7 +80,6 @@ It completes the word which begins with tilde with a user name if user name exis
 
 #Declarations
 
-(1) Features done by Ojasvi :
 		-> Identification of word and meta (~,",*, ?, $, {,}, >, <)
         -> implemented alias using linked list as to store aliases related functions
 		-> commands (date, rm, mkdir, pwd, echo, touch, head, tail)
@@ -88,7 +87,6 @@ It completes the word which begins with tilde with a user name if user name exis
         -> detection of arguments (working with ls, head, tail)
         -> File Name Completion (Extra Credit)
 
-(2) Features done by Akshay :
 		-> Alias loop detection and expansion using recursion
 		-> redirection of IO to a particular file (ls, head)
 		-> commands (ls, wc, cd, setenv, printenv, alias, unalias, unsetenv, bye, )
