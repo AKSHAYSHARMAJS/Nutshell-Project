@@ -18,8 +18,7 @@
 #include <sstream>
 #include <readline/readline.h>
 #include <readline/history.h>
-
-
+#include <time.h>
 
 
 
@@ -42,10 +41,27 @@ char* temp_string = "temp";
 char* temp_string2 = "temp";
 char* io = "";
 LL *list;
+int filedesc;
 
 char* alias_expand(char* name)
 {
 	return command_expand(list, name);
+}
+
+bool match(char *first, char * second)
+{
+    if (*first == '\0' && *second == '\0')
+        return true;
+
+    if (*first == '*' && *(first+1) != '\0' && *second == '\0')
+        return false;
+
+    if (*first == '?' || *first == *second)
+        return match(first+1, second+1);
+
+    if (*first == '*')
+        return match(first+1, second) || match(first, second+1);
+    return false;
 }
 
 %}
@@ -59,7 +75,7 @@ char* alias_expand(char* name)
 	int num;
 }
 
-%token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL PIPING LS PRINT PWD TILDE TOUCH HEAD TAIL CAT WC ESC MKDIR RM
+%token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL LS PRINT PWD TILDE TOUCH HEAD TAIL CAT WC ESC MKDIR RM DATE
 %token <string> WORD ARG
 
 %%
@@ -68,7 +84,7 @@ cmdline:
   | cmdline cmd ;
 
 cmd:
-  | bye | cd | alias | unalias | setenv | printenv | unsetenv | piping | redirectIO | read_from_io | ls | echo | pwd | mkdir | rm | envexpand | touch | head | tail | wc | cat | word ;
+  | bye | cd | alias | unalias | setenv | printenv | unsetenv | redirectIO | ls | echo | pwd | mkdir | rm | envexpand | touch | head | tail | wc | date |cat | word ;
 
 
 envexpand:
@@ -192,34 +208,21 @@ params:
 			closedir(d);
 			}
 		}
-		| QUESTION WORD {
+		| WORD QUESTION WORD {
 			wild = 0;
-		DIR *d;
+			DIR *d;
 			struct dirent *dir;
 			d = opendir(".");
-			int matching, length = strlen($2);
-			char *stringout, *stringin = $2;
+			char *stringin = $1, *stringinright = $3;
+			strcat(stringin,"?");
+			strcat(stringin, stringinright);
 			if(d)
 			{
 				while ((dir = readdir(d)) != NULL)
 				{
-					matching = 1;
-					stringout = dir->d_name;
-					int outlength = strlen(stringout) - 1;
-					int k;
-					for (k = length - 1; k >= 0; k--)
+					if (match(stringin, dir->d_name))
 					{
-						if (stringout[outlength] != stringin[k])
-						{
-							matching = 0;
-							break;
-						}
-						outlength--;
-					}
-					if (matching == 1 && outlength == 1)
-					{
-						temp_string = stringout;
-						wildcard[wild] = temp_string;
+						wildcard[wild] = dir->d_name;
 						wild++;
 					}
 				}
@@ -227,36 +230,21 @@ params:
 			}
 		}
 		| WORD QUESTION {
+			printf("%s", $1);
 			wild = 0;
 			DIR *d;
 			struct dirent *dir;
 			d = opendir(".");
-			int matching, length = strlen($1);
-			char *stringout, *stringin = $1;
+			char *stringin = $1;
+			strcat(stringin,"?");
 			if(d)
 			{
 				while ((dir = readdir(d)) != NULL)
 				{
-					matching = 1;
-					stringout = dir->d_name;
-					int outlength = strlen(stringout);
-					if (outlength - length != 1)
+					if (match(stringin, dir->d_name))
 					{
-						matching = 0;
-					}
-					int k;
-					for (k = 0; k < length; k++)
-					{
-						if (stringout[k] != stringin[k])
-						{
-							matching = 0;
-							break;
-						}
-					}
-					if (matching == 1)
-					{
-						temp_string = stringout;
-						wildcard[wild] = temp_string;
+						printf("%s", dir->d_name);
+						wildcard[wild] = dir->d_name;
 						wild++;
 					}
 				}
@@ -270,7 +258,13 @@ bye:
   | BYE { cmd_number = 1;}
 
 redirectIO:
-			GREATER WORD {
+		GREATER {
+			io = "greater";
+		}
+		| LESS {
+			io = "less";
+		}
+		|	GREATER WORD {
 			temp_string2 = $2;
 			io = "greater";
 		}
@@ -384,8 +378,15 @@ cd:
 			col++;
 			row++;
 
-	}
+	};
 
+
+date:
+	DATE {
+		time_t t = time(NULL);
+  struct tm tm = *localtime(&t);
+  printf("now: %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+	}
 
 
 alias:
@@ -522,25 +523,9 @@ printenv:
 					row++;
 				};
 
-read_from_io:
-			LESS params {
-				col = 0;
-				cmd_number = 8;
-				char* file = temp_string;
-				io = "less";
-				varTbl[row][col] = io;
-				col++;
-				varTbl[row][col] = file;
-				col++;
-				col++;
-	};
-
 
 ls:
  		LS {
-				cmd_number = 9;
-			}
-			| LS PIPING {
 				cmd_number = 9;
 			}
 			| LS params{
@@ -599,11 +584,21 @@ touch:
 		};
 
 head:
-			HEAD WORD{
+		HEAD WORD{
 				varTbl[row][col] = $2;
 				row++;
 				col++;
 				cmd_number = 13;
+		}
+		| HEAD WORD redirectIO {
+			varTbl[row][col] = $2;
+			col++;
+			varTbl[row][col] = io;
+			col++;
+			varTbl[row][col] = temp_string2;
+			row++;
+			col++;
+			cmd_number = 13;
 		}
 		| HEAD ARG WORD{
 			varTbl[row][col] = $2;
@@ -629,71 +624,6 @@ tail:
 			col++;
 			cmd_number = 16;
 		}
-
-
-
-piping:
-		PIPING params{
-			cmd_number = 21;
-			int mypipe[2]; //pipe with two ends, read and write
-			pid_t p;
-			int mutex, wpid;
-			pipe(mypipe); //creates pipe
-			p = fork();
-			if (p < 0) {
-				printf("fork failed");
-			}
-			else if (p == 0) {
-				FILE *f;
-				f = fopen("pipe.txt", "w");
-				fprintf(f, "%s\n%s", temp_string, "bye");
-				fclose(f);
-				f = fopen("pipe.txt", "r");
-				int fd = fileno(f);
-				dup2(fd, fileno(stdin));
-				fclose(f);
-				char dest[100];
-				strcpy(dest, getenv("PWD"));
-				strcat(dest, "/");
-				strcat(dest, "pipe.txt");
-				execl(dest, "pipe.txt", 0);
-			} else {
-				while ((wpid = wait(&mutex)) > 0) {
-					//
-				}
-			}
-		}
-		| PIPING {}
-		| PIPING params PIPING{
-			cmd_number = 21;
-			int mypipe[2]; //pipe with two ends, read and write
-			pid_t p;
-			int mutex, wpid;
-			pipe(mypipe); //creates pipe
-			p = fork();
-			if (p < 0) {
-				printf("fork failed");
-			}
-			else if (p == 0) {
-				FILE *f;
-				f = fopen("pipe.txt", "w");
-				fprintf(f, "%s\n%s", temp_string, "bye");
-				fclose(f);
-				f = fopen("pipe.txt", "r");
-				int fd = fileno(f);
-				dup2(fd, fileno(stdin));
-				fclose(f);
-				char dest[100];
-				strcpy(dest, getenv("PWD"));
-				strcat(dest, "/");
-				strcat(dest, "pipe.txt");
-				execl(dest, "pipe.txt", 0);
-			} else {
-				while ((wpid = wait(&mutex)) > 0) {
-					//
-				}
-			}
-		};
 
 
 echo:

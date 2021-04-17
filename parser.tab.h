@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 53 "parser.y"
+#line 69 "parser.y"
 
 #include "node.h"
 
@@ -77,19 +77,19 @@ extern int yydebug;
     DOLLAR = 272,                  /* DOLLAR  */
     OCURL = 273,                   /* OCURL  */
     CCURL = 274,                   /* CCURL  */
-    PIPING = 275,                  /* PIPING  */
-    LS = 276,                      /* LS  */
-    PRINT = 277,                   /* PRINT  */
-    PWD = 278,                     /* PWD  */
-    TILDE = 279,                   /* TILDE  */
-    TOUCH = 280,                   /* TOUCH  */
-    HEAD = 281,                    /* HEAD  */
-    TAIL = 282,                    /* TAIL  */
-    CAT = 283,                     /* CAT  */
-    WC = 284,                      /* WC  */
-    ESC = 285,                     /* ESC  */
-    MKDIR = 286,                   /* MKDIR  */
-    RM = 287,                      /* RM  */
+    LS = 275,                      /* LS  */
+    PRINT = 276,                   /* PRINT  */
+    PWD = 277,                     /* PWD  */
+    TILDE = 278,                   /* TILDE  */
+    TOUCH = 279,                   /* TOUCH  */
+    HEAD = 280,                    /* HEAD  */
+    TAIL = 281,                    /* TAIL  */
+    CAT = 282,                     /* CAT  */
+    WC = 283,                      /* WC  */
+    ESC = 284,                     /* ESC  */
+    MKDIR = 285,                   /* MKDIR  */
+    RM = 286,                      /* RM  */
+    DATE = 287,                    /* DATE  */
     WORD = 288,                    /* WORD  */
     ARG = 289                      /* ARG  */
   };
@@ -100,7 +100,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 57 "parser.y"
+#line 73 "parser.y"
 
 	char* string;
 	int num;

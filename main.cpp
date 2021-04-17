@@ -22,8 +22,8 @@ extern char* varTbl[128][100];
 extern int row, col, wild;
 extern struct LL *list;
 extern char* wildcard[100];
-int filedesc;
 extern char** environ;
+extern int filedesc;
 int saved_stdout;
 
 
@@ -60,6 +60,7 @@ void runcd()
 			{
 				printf("Directory not found\n");
 			}
+
 			dup2(saved_stdout, 1);
 		}
 		else if (strcmp(varTbl[row-1][col-2], "less") == 0)
@@ -166,35 +167,6 @@ void rununsetenv ()
 
 }
 
-
-int redirectIO_less () {
-	int mypipe[2]; //pipe with two ends, read and write
-	pid_t p;
-	int mutex, wpid;
-	pipe(mypipe); //creates pipe
-	p = fork();
-	if (p < 0) {
-		printf("fork failed");
-	}
-	else if (p == 0) {
-		int filedesc = open(varTbl[row-1][col-1], O_RDONLY);
-		dup2(filedesc, STDIN_FILENO);
-		close(filedesc);
-		char dest[100];
-		strcpy(dest, getenv("PWD"));
-		strcat(dest, "/");
-		strcat(dest, varTbl[row-1][col-1]);
-		execl(dest, varTbl[row-1][col-1], 0);
-	}
-	else {
-		while ((wpid = wait(&mutex)) > 0) {
-			//parent process waits until child exits
-		}
-	}
-	return 0;
-}
-
-
 void runprintenv()
 {
 	if (col >= 2)
@@ -202,6 +174,11 @@ void runprintenv()
 		if (strcmp(varTbl[row-1][col-2], "greater") == 0)
 		{
 			redirectIO_greater(varTbl[row-1][col-1]);
+			int k = 0;
+			while (environ[k]) {
+				printf("%s\n", environ[k++]);
+			}
+			dup2(saved_stdout, 1);
 		}
 		else if (strcmp(varTbl[row-1][col-2], "less") == 0)
 		{
@@ -209,12 +186,15 @@ void runprintenv()
 			return;
 		}
 	}
-
+	else{
 		int k = 0;
 		while (environ[k]) {
 			printf("%s\n", environ[k++]);
 		}
-		dup2(saved_stdout, 1);
+	}
+
+
+
 }
 
 
@@ -340,17 +320,41 @@ void runTouch()
 
 void run_head()
 {
-	std::string word;
-    std::fstream file;
-    int count = 1;
+	if(col >= 2 && strcmp(varTbl[row-1][col-2], "greater") == 0)
+	{
+		redirectIO_greater(varTbl[row-1][col-1]);
+		std::string word;
+	    std::fstream file;
+	    int count = 1;
 
-    file.open(varTbl[row - 1][col - 1]);
-    int numOfLines=0;
+	    file.open(varTbl[row - 1][col - 3]);
+	    int numOfLines=0;
 
-    while(getline(file, word) && numOfLines < 10){
-        std::cout << word << std::endl;
-        numOfLines++;
-    }
+	    while(getline(file, word) && numOfLines < 10){
+	        std::cout << word << std::endl;
+	        numOfLines++;
+
+	    }
+			dup2(saved_stdout, 1);
+			close(saved_stdout);
+
+	}
+	else
+	{
+		std::string word;
+	    std::fstream file;
+	    int count = 1;
+
+	    file.open(varTbl[row - 1][col - 1]);
+	    int numOfLines=0;
+
+	    while(getline(file, word) && numOfLines < 10){
+	        std::cout << word << std::endl;
+	        numOfLines++;
+	    }
+	}
+
+
 }
 
 void run_head_arg()
@@ -459,9 +463,6 @@ void processCommand()
 					break;
 		case 7://printenv
 					runprintenv();
-					break;
-		case 8:
-					redirectIO_less();
 					break;
 		case 9:
 					runls();

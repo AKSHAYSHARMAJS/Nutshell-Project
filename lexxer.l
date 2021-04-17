@@ -25,6 +25,7 @@ cat {return CAT;}
 wc {return WC;}
 mkdir {return MKDIR;}
 rm {return RM;}
+date {return DATE;}
 [\~] {return TILDE;}
 [\"] {return QUOTE;}
 [\<] {return LESS;}
@@ -35,7 +36,6 @@ rm {return RM;}
 [\$] {return DOLLAR;}
 [\{] {return OCURL;}
 [\}] {return CCURL;}
-[\|] {return PIPING;}
 [0-9a-zA-Z/\-\:\.]+ {
                         yylval.string = strdup(yytext);
 
