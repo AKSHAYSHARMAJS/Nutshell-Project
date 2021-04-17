@@ -88,8 +88,10 @@ extern int yydebug;
     CAT = 283,                     /* CAT  */
     WC = 284,                      /* WC  */
     ESC = 285,                     /* ESC  */
-    WORD = 286,                    /* WORD  */
-    ARG = 287                      /* ARG  */
+    MKDIR = 286,                   /* MKDIR  */
+    RM = 287,                      /* RM  */
+    WORD = 288,                    /* WORD  */
+    ARG = 289                      /* ARG  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -103,7 +105,7 @@ union YYSTYPE
 	char* string;
 	int num;
 
-#line 107 "parser.tab.h"
+#line 109 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

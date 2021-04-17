@@ -23,6 +23,8 @@ head { return HEAD;}
 tail { return TAIL;}
 cat {return CAT;}
 wc {return WC;}
+mkdir {return MKDIR;}
+rm {return RM;}
 [\~] {return TILDE;}
 [\"] {return QUOTE;}
 [\<] {return LESS;}

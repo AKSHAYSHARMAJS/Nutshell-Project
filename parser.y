@@ -59,7 +59,7 @@ char* alias_expand(char* name)
 	int num;
 }
 
-%token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL PIPING LS PRINT PWD TILDE TOUCH HEAD TAIL CAT WC ESC
+%token BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL PIPING LS PRINT PWD TILDE TOUCH HEAD TAIL CAT WC ESC MKDIR RM
 %token <string> WORD ARG
 
 %%
@@ -68,7 +68,7 @@ cmdline:
   | cmdline cmd ;
 
 cmd:
-  | bye | cd | alias | unalias | setenv | printenv | unsetenv | piping | redirectIO | read_from_io | ls | echo | pwd | envexpand | touch | head | tail | wc | cat | word ;
+  | bye | cd | alias | unalias | setenv | printenv | unsetenv | piping | redirectIO | read_from_io | ls | echo | pwd | mkdir | rm | envexpand | touch | head | tail | wc | cat | word ;
 
 
 envexpand:
@@ -346,7 +346,9 @@ cd:
 
 			struct dirent *dir;
 			DIR *d;
-			char *path = getenv("HOME");
+			char path[100] = "";
+			strcat(path, getenv("HOME"));
+			printf("%s early", path);
 			strcat(path,"/..");
 			d = opendir(path);
 			int matching, length = strlen($3);
@@ -744,6 +746,25 @@ cat:
 				write(STDOUT_FILENO,&ch,1);
 		}
 	};
+
+
+mkdir:
+		MKDIR WORD{
+			int check = mkdir($2,0777);
+
+    // check if directory is created or not
+	    if (!check)
+	        printf("Directory created\n");
+	    else {
+	        printf("Unable to create directory\n");
+    }
+		}
+
+
+rm:
+	RM WORD{
+		remove($2);
+	}
 
 
 wc:
