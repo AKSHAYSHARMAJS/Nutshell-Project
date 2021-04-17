@@ -16,6 +16,12 @@
 #include <iostream>
 #include <algorithm>
 #include <sstream>
+#include <readline/readline.h>
+#include <readline/history.h>
+
+
+
+
 
 int yylex();
 
@@ -28,6 +34,7 @@ void yyerror(char *s){
 int cmd_number = -1;
 char* varTbl[128][100];
 char* wildcard[100];
+char* users[1000];
 int wild = 0;
 int row = 0;
 int col = 0;
@@ -320,7 +327,62 @@ cd:
 		varTbl[row][col] = temp_string2;
 		col++;
 		row++;
-	};
+	}
+	| CD TILDE WORD ESC{
+
+		/*while (true) {
+		 errno = 0; // so we can distinguish errors from no more entries
+		 passwd* entry = getpwent();
+		 if (!entry) {
+				 if (errno) {
+						 std::cerr << "Error reading password database\n";
+						 return EXIT_FAILURE;
+				 }
+				 break;
+		 }
+		 std::cout << entry->pw_name << '\n';
+ }
+ endpwent();*/
+
+			struct dirent *dir;
+			DIR *d;
+			char *path = getenv("HOME");
+			strcat(path,"/..");
+			d = opendir(path);
+			int matching, length = strlen($3);
+			char *stringin = $3, *stringout;
+			if(d)
+			{
+				while ((dir = readdir(d)) != NULL)
+				{
+					matching = 1;
+					stringout = dir->d_name;
+					int k;
+					for (k = 0; k < length; k++)
+					{
+						if (stringout[k] != stringin[k])
+						{
+							matching = 0;
+							break;
+						}
+					}
+					if (matching == 1)
+					{
+						temp_string = stringout;
+						break;
+					}
+				}
+			closedir(d);
+			}
+			strcat(path,"/");
+			strcat(path,temp_string);
+			cmd_number = 3;
+			col = 0;
+			varTbl[row][col] = path;
+			col++;
+			row++;
+
+	}
 
 
 
@@ -710,7 +772,7 @@ wc:
 			}
 			file.close();
 
-	};
+	}
 
 word:
 	WORD {
