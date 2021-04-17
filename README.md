@@ -1,17 +1,17 @@
-#THE NUTSHELL TERM PROJECT
+# THE NUTSHELL TERM PROJECT
  
-#Description
+# Description
 The objective of this Project is to design a command interpreter for Korn shell-like command language in C using Lex and Yacc. The code is contained within the main.cpp, node.h, node.cpp, lexxer.l and parser.y files.
 
 
-#Features Not Working
+# Features Not Working
 
 (1) Using Pipes with Non-built-in Commands
 
 (2) Using both Pipes and I/O Redirection, combined, with Non-built-in Commands
 
 
-#Features Working
+# Features Working
 
 (1) Built-in Commands
 
@@ -36,7 +36,7 @@ The objective of this Project is to design a command interpreter for Korn shell-
 (11) File Name Completion 
 
 
-#Features
+# Features
 
 (1) This shell identifies the word or meta in the input command.
 
@@ -65,7 +65,7 @@ The objective of this Project is to design a command interpreter for Korn shell-
 
  (10) tokens that are recognized by parser are : BYE ENDF CD ALIAS QUOTE UNALIAS SETENV PRINTENV UNSETENV LESS GREATER STAR AND QUESTION DOLLAR OCURL CCURL LS PRINT PWD TILDE TOUCH HEAD TAIL CAT WC ESC MKDIR RM DATE WORD ARG
 
-#EXTRA CREDIT
+# EXTRA CREDIT
 
 (1) Tilde Expansion  
 ~name will replace with user's name home directory.
@@ -78,7 +78,7 @@ It completes the word which begins with tilde with a user name if user name exis
 
 
 
-#Declarations
+# Declarations
 
 		-> Identification of word and meta (~,",*, ?, $, {,}, >, <)
         -> implemented alias using linked list as to store aliases related functions
@@ -98,7 +98,7 @@ It completes the word which begins with tilde with a user name if user name exis
 
 
 
-#Code Structure
+# Code Structure
 
 (1) node.h : Defines the linked list that store the alias to value mapping.
 
@@ -112,6 +112,6 @@ It completes the word which begins with tilde with a user name if user name exis
 
 
 
-#TO RUN SHELL 
+# TO RUN SHELL 
 A Makefile is included with our shell project submission. To run our shell, simply run **'make'** and then **'./main'**
 		 
