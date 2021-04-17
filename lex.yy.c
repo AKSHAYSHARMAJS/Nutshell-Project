@@ -365,10 +365,10 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[84] =
     {   0,
-        0,    0,   33,   29,   29,   28,   17,   23,   21,   20,
+        0,    0,   33,   30,   29,   28,   17,   23,   21,   20,
        27,   18,   19,   22,   31,   27,   27,   27,   27,   27,
        27,   27,   27,   27,   27,   27,   24,   26,   25,   16,
-       30,   27,   27,   27,   27,    2,   27,   27,    8,   27,
+       29,   27,   27,   27,   27,    2,   27,   27,    8,   27,
        27,   27,   27,   27,   27,   15,   27,    1,   14,   27,
        27,   27,   10,   27,   27,   27,   27,   27,   27,    9,
        12,   27,   27,   13,   27,   27,   27,    3,   27,   27,
@@ -929,15 +929,15 @@ case YY_STATE_EOF(INITIAL):
 {return ENDF;}
 	YY_BREAK
 case 29:
-/* rule 29 can match eol */
 YY_RULE_SETUP
 #line 48 "lexxer.l"
-{return ESC;}
+{ ; } /* Ignore Whitespace */
 	YY_BREAK
 case 30:
+/* rule 30 can match eol */
 YY_RULE_SETUP
 #line 49 "lexxer.l"
-{ ; } /* Ignore Whitespace */
+{return ESC;}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP

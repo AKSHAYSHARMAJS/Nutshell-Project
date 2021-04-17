@@ -45,8 +45,8 @@ wc {return WC;}
                     };
 [\n] {return -1;}
 <<EOF>> {return ENDF;}
-[^[] {return ESC;}
 [ \t\r]+                          { ; } /* Ignore Whitespace */
+[^[] {return ESC;}
 .                                 { ; } /* No Match */
 
 %%

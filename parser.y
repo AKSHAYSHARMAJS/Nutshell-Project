@@ -335,11 +335,6 @@ alias:
 			col++;
 			row++;
 		}
-		| ALIAS WORD CD {
-			char *name = $2;
-			char *value = "cd";
-			push_LL(list, name, value);
-		}
 		| ALIAS WORD QUOTE params QUOTE {
 			char *name = $2;
 			char *value = temp_string;
@@ -451,9 +446,6 @@ unsetenv:
 
 printenv:
 				PRINTENV {
-					cmd_number = 7;
-				}
-				| PRINTENV {
 					cmd_number = 7;
 				}
 				| PRINTENV redirectIO {
